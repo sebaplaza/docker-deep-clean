@@ -37,7 +37,6 @@ pub fn inspect(container_name: &String) -> Vec<String> {
 }
 
 #[derive(Serialize, Deserialize)]
-
 pub struct ContainerInfo {
     #[serde(alias = "Names")]
     pub name: String,
