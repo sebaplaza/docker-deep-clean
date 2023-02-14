@@ -1,13 +1,12 @@
-use std::collections::HashSet;
-
+use std::fs;
 mod docker;
 mod utils;
 
 fn main() {
-    let containers = docker::get_containers();
-    let all_volumes = docker::get_volumes_size();
+    let all_volumes = docker::get_diff_volumes();
     let mut used_volumes: Vec<String> = Vec::new();
 
+    let containers = docker::get_containers();
     for container in containers {
         println!("");
         println!("volumes for container {}", container.name);
@@ -18,16 +17,22 @@ fn main() {
         used_volumes.extend(volumes);
     }
 
-    let set1: HashSet<String> = HashSet::from_iter(all_volumes);
-    let set2: HashSet<String> = HashSet::from_iter(used_volumes);
+    let mut unused_volumes: Vec<String> = Vec::new();
 
-    let volumes_to_delete: Vec<&String> = set2.difference(&set1).collect();
+    for volume in all_volumes {
+        let is_used = used_volumes.contains(&volume);
+        if !is_used {
+            unused_volumes.push(String::from(volume));
+        }
+    }
 
-    for volume in volumes_to_delete {
-        print!("");
+    // remove unused volumes
+    for volume in unused_volumes {
+        println!("");
         println!("to delete {}", volume);
-        let command = format!("rm -rf {}", volume);
-        utils::launch_command(&command);
-        println!("deleted {}", volume);
+        match fs::remove_dir_all(volume.clone()) {
+            Ok(()) => println!("Successfully deleted the folder {}", volume),
+            Err(e) => println!("Error deleting the folder: {} {}", volume, e),
+        };
     }
 }

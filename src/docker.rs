@@ -60,10 +60,9 @@ pub fn get_containers() -> Vec<ContainerInfo> {
     containers_data
 }
 
-pub fn get_volumes_size() -> Vec<String> {
+pub fn get_diff_volumes() -> Vec<String> {
     let mut result: Vec<String> = Vec::new();
-    let command =
-        String::from("du -s /var/lib/docker/overlay2/*/diff | sort -n -r | cut -d$'\t' -f2-");
+    let command = String::from("find /var/lib/docker -name 'diff' -type d");
 
     let output = utils::launch_command(&command);
 
